@@ -5,7 +5,7 @@ AI Logic - Three Kingdoms game AI system
 
 import random
 from typing import List, Dict, Optional, Tuple
-from src.entities import Army, City, General, ArmyManager
+from src.entities import City, General
 from src.entities.army import Army
 
 

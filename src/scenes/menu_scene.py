@@ -5,6 +5,7 @@ Menu Scene - Main menu interface
 
 import pygame
 import math
+import random
 from typing import List, Tuple
 from .base_scene import BaseScene
 from src.resource_loader import resource_loader
@@ -229,7 +230,6 @@ class MenuScene(BaseScene):
 
     def _draw_stars(self):
         """绘制背景星星装饰"""
-        import random
         current_time = pygame.time.get_ticks()
         random.seed(current_time // 1000)  # 每秒重新播种以保持稳定
 
