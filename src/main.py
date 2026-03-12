@@ -16,7 +16,7 @@ def main():
     """游戏主函数"""
     print("=" * 50)
     print("       三国霸业 Three Kingdoms")
-    print("       Version 0.2.1")
+    print("       Version 0.2.2")
     print("=" * 50)
     print()
     print("正在启动游戏...")

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "three-kingdoms"
-version = "0.2.1"
+version = "0.2.2"
 description = "三国霸业 - 经典的三国策略游戏"
 readme = "README.md"
 license = {text = "MIT"}
