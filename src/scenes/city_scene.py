@@ -22,6 +22,7 @@ class CityScene(BaseScene):
         self.game = game
         self.city = city
         self.selected_tab = "overview"  # overview, recruit, build, general
+        self.message = ""  # 操作提示信息
 
     def handle_events(self, events: list):
         """处理事件"""
@@ -99,9 +100,9 @@ class CityScene(BaseScene):
         # 尝试招募 1 个士兵
         success, count, total_cost = self.city.recruit_soldiers(soldier_type, 1)
         if success:
-            self.battle_log = f"招募了{count}个{soldier_type}"
+            self.message = f"招募了{count}个{soldier_type}"
         else:
-            self.battle_log = "金钱不足或兵营已满"
+            self.message = "金钱不足或兵营已满"
 
     def _upgrade_building(self, building_type: str, cost: int):
         """升级建筑"""
@@ -109,9 +110,9 @@ class CityScene(BaseScene):
             return
         success, actual_cost = self.city.upgrade_building(building_type)
         if success:
-            self.battle_log = f"升级了{building_type}"
+            self.message = f"升级了{building_type}"
         else:
-            self.battle_log = "升级失败（金钱不足或已满级）"
+            self.message = "升级失败（金钱不足或已满级）"
 
     def update(self, delta_time: float):
         """更新逻辑"""
@@ -249,6 +250,9 @@ class CityScene(BaseScene):
 
     def _draw_build(self):
         """绘制建设界面"""
+        if not self.city:
+            return
+
         font = resource_loader.get_font(FONT_SIZE_NORMAL)
 
         y = 120
