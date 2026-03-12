@@ -4,7 +4,7 @@ General Class - Three Kingdoms general entity
 """
 
 import pygame
-from typing import Optional, Dict, List, Tuple
+from typing import Optional, Dict, List, Tuple, Any
 from src.resource_loader import resource_loader
 from src.config import COLOR_WHITE, COLOR_GOLD, FONT_SIZE_NORMAL, FONT_SIZE_SMALL
 
@@ -245,7 +245,7 @@ class General:
         if effect in self.status_effects:
             self.status_effects.remove(effect)
 
-    def get_info_dict(self) -> Dict[str, any]:
+    def get_info_dict(self) -> Dict[str, Any]:
         """获取武将信息字典"""
         return {
             "姓名": self.name,

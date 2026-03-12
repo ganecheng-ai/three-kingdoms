@@ -128,10 +128,3 @@ class Game:
         pygame.quit()
 
 
-# 全局游戏实例
-game_instance: Optional[Game] = None
-
-
-def get_game() -> Optional[Game]:
-    """获取游戏实例"""
-    return game_instance

@@ -44,7 +44,9 @@ class ResourceLoader:
     def set_sound_volume(self, volume: float):
         """设置音效音量 (0.0-1.0)"""
         self.sound_volume = max(0.0, min(1.0, volume))
-        pygame.mixer.set_volume(self.sound_volume)
+        # 更新所有已加载音效的音量
+        for sound in self.sounds.values():
+            sound.set_volume(self.sound_volume)
 
     def set_music_volume(self, volume: float):
         """设置背景音乐音量 (0.0-1.0)"""

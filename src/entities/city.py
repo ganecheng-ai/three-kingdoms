@@ -4,7 +4,7 @@ City Class - Three Kingdoms city entity
 """
 
 import pygame
-from typing import Optional, Dict
+from typing import Optional, Dict, Any, Tuple
 
 
 class City:
@@ -104,7 +104,7 @@ class City:
         """检查是否被点击"""
         return self.rect.collidepoint(pos)
 
-    def recruit_soldiers(self, soldier_type: str, count: int) -> tuple:
+    def recruit_soldiers(self, soldier_type: str, count: int) -> Tuple[bool, int, int]:
         """招募士兵
 
         Args:
@@ -163,7 +163,7 @@ class City:
         self.food += food
         return food
 
-    def upgrade_building(self, building_type: str) -> tuple:
+    def upgrade_building(self, building_type: str) -> Tuple[bool, int]:
         """升级建筑
 
         Args:
@@ -234,7 +234,7 @@ class City:
             return True
         return False
 
-    def get_info_dict(self) -> dict:
+    def get_info_dict(self) -> Dict[str, Any]:
         """获取城市信息字典"""
         return {
             "城市": self.name,

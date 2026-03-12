@@ -4,7 +4,7 @@ Army Class - Three Kingdoms army entity
 """
 
 import pygame
-from typing import Optional, Dict, List, Tuple
+from typing import Optional, Dict, List, Tuple, Any
 from src.resource_loader import resource_loader
 from src.config import COLOR_WHITE, COLOR_GOLD, FONT_SIZE_NORMAL, FONT_SIZE_SMALL
 
@@ -176,6 +176,8 @@ class Army:
 
         actual_count = max(0, count)
         self.soldiers[soldier_type] += actual_count
+        if actual_count > 0:
+            self._had_soldiers = True
         return actual_count
 
     def remove_soldiers(self, soldier_type: str, count: int) -> int:
@@ -257,25 +259,6 @@ class Army:
             return True
         return False
 
-    def add_soldiers(self, soldier_type: str, count: int) -> int:
-        """添加士兵
-
-        Args:
-            soldier_type: 兵种类型
-            count: 数量
-
-        Returns:
-            实际添加的数量
-        """
-        if soldier_type not in self.soldiers:
-            return 0
-
-        actual_count = max(0, count)
-        self.soldiers[soldier_type] += actual_count
-        if actual_count > 0:
-            self._had_soldiers = True
-        return actual_count
-
     def get_soldier_breakdown(self) -> Dict[str, Dict]:
         """获取兵种详细信息"""
         breakdown = {}
@@ -286,7 +269,7 @@ class Army:
                 breakdown[soldier_type] = info
         return breakdown
 
-    def get_info_dict(self) -> dict:
+    def get_info_dict(self) -> Dict[str, Any]:
         """获取军队信息字典"""
         info = {
             "势力": self.owner,
