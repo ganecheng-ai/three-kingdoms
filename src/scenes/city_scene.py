@@ -60,7 +60,61 @@ class CityScene(BaseScene):
             btn_rect = pygame.Rect(x, 60, 80, 35)
             if btn_rect.collidepoint(pos):
                 self.selected_tab = tab_id
-                break
+                return
+
+        # 招兵按钮处理
+        if self.selected_tab == "recruit" and self.city:
+            y = 120
+            troops = [
+                ("步兵", 100, 10, "infantry"),
+                ("骑兵", 200, 5, "cavalry"),
+                ("弓兵", 150, 8, "archer"),
+                ("战车", 500, 2, "siege"),
+            ]
+            for name, cost, available, soldier_type in troops:
+                btn_rect = pygame.Rect(550, y, 80, 30)
+                if btn_rect.collidepoint(pos):
+                    self._recruit_soldier(soldier_type, cost)
+                    return
+                y += 50
+
+        # 建设按钮处理
+        if self.selected_tab == "build" and self.city:
+            y = 120
+            buildings = [
+                ("农田", "farm", 200),
+                ("市集", "market", 200),
+                ("兵营", "barracks", 300),
+                ("城墙", "wall", 500),
+                ("武馆", "dojo", 400),
+            ]
+            for name, building_type, cost in buildings:
+                btn_rect = pygame.Rect(650, y, 80, 30)
+                if btn_rect.collidepoint(pos):
+                    self._upgrade_building(building_type, cost)
+                    return
+                y += 50
+
+    def _recruit_soldier(self, soldier_type: str, cost: int):
+        """招募士兵"""
+        if not self.city:
+            return
+        # 尝试招募 1 个士兵
+        success, count, total_cost = self.city.recruit_soldiers(soldier_type, 1)
+        if success:
+            self.battle_log = f"招募了{count}个{soldier_type}"
+        else:
+            self.battle_log = "金钱不足或兵营已满"
+
+    def _upgrade_building(self, building_type: str, cost: int):
+        """升级建筑"""
+        if not self.city:
+            return
+        success, actual_cost = self.city.upgrade_building(building_type)
+        if success:
+            self.battle_log = f"升级了{building_type}"
+        else:
+            self.battle_log = "升级失败（金钱不足或已满级）"
 
     def update(self, delta_time: float):
         """更新逻辑"""

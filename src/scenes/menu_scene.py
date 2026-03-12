@@ -168,6 +168,15 @@ class MenuScene(BaseScene):
         # 更新粒子系统
         particle_system.update(delta_time)
 
+        # 检查淡出动画完成后的操作
+        if self.fade_anim.is_complete:
+            if hasattr(self, '_do_start_game') and self._do_start_game:
+                self._do_start_game()
+                delattr(self, '_do_start_game')
+            if hasattr(self, '_do_quit_game') and self._do_quit_game:
+                self._do_quit_game()
+                delattr(self, '_do_quit_game')
+
     def draw(self):
         """绘制场景"""
         # 绘制背景

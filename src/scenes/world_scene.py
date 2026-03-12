@@ -146,6 +146,10 @@ class WorldScene(BaseScene):
                 self.game.current_city = self.selected_city
                 self.next_scene = "city"
                 self.running = False
+            else:
+                # 不是玩家的城市，显示提示
+                resource_loader.play_sound("click.wav")
+                print(f"这是 {self.selected_city.faction_name} 的城市，需要先攻占")
 
     def _enter_city(self):
         """进入城市"""
