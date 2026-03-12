@@ -5,6 +5,7 @@ Animation System - Manage game animation effects
 
 import pygame
 import math
+import random
 from typing import List, Tuple, Optional, Callable
 from enum import Enum
 
@@ -181,7 +182,6 @@ class PulseAnimation(Animation):
         # 使用正弦波实现脉动效果
         cycles = self.elapsed / self.initial_duration
         progress = cycles % 1.0
-        eased = self._ease(progress)
         # 在 start_scale 和 end_scale 之间插值
         return self.start_scale + (self.end_scale - self.start_scale) * abs(math.sin(progress * math.pi))
 
@@ -203,7 +203,6 @@ class ShakeAnimation(Animation):
     ):
         super().__init__(AnimationType.SHAKE, duration, EasingType.EASE_OUT, on_complete)
         self.intensity = intensity
-        self.original_offset = 0
 
     def get_offset(self) -> Tuple[int, int]:
         """获取当前震动偏移"""
@@ -402,8 +401,6 @@ class ParticleSystem:
         size_range: Tuple[int, int] = (3, 6),
     ):
         """发射粒子"""
-        import random
-
         for _ in range(count):
             speed = random.uniform(*speed_range)
             angle = random.uniform(*angle_range)
@@ -423,8 +420,6 @@ class ParticleSystem:
         count: int = 20,
     ):
         """发射爆炸粒子"""
-        import random
-
         for _ in range(count):
             speed = random.uniform(100, 300)
             angle = random.uniform(0, 2 * math.pi)

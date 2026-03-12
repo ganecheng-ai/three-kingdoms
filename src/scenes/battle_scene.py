@@ -103,6 +103,7 @@ class BattleScene(BaseScene):
         self.current_turn = "player"
         self.battle_over = False
         self.winner = None
+        self._enemy_turn_timer = 0.0
 
         # 初始日志
         self.battle_log.append("战斗开始！")
@@ -218,12 +219,10 @@ class BattleScene(BaseScene):
 
         # AI 回合延迟 - 使用计时器替代 delay 以避免阻塞事件处理
         if self.current_turn == "enemy" and not self.battle_over:
-            if not hasattr(self, '_enemy_turn_timer'):
-                self._enemy_turn_timer = 0
             self._enemy_turn_timer += delta_time
             if self._enemy_turn_timer >= 0.5:  # 500ms 延迟
                 self._execute_turn()
-                self._enemy_turn_timer = 0
+                self._enemy_turn_timer = 0.0
 
     def draw(self):
         """绘制场景"""

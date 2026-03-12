@@ -31,10 +31,6 @@ class WorldScene(BaseScene):
         self.player_faction = "shu"  # 玩家势力
         self.turn = 1
 
-        # 地图偏移（用于滚动）
-        self.map_offset_x = 0
-        self.map_offset_y = 0
-
         # 动画管理器
         self.animation_manager = AnimationManager()
 

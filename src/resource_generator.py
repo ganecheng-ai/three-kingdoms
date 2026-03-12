@@ -5,9 +5,12 @@ Resource Generator - Programmatically generate game resources
 
 import pygame
 import os
+import sys
 import wave
 import struct
 import math
+import random
+import io
 from typing import Tuple, Optional
 
 
@@ -126,7 +129,6 @@ class ResourceGenerator:
     def _draw_star(self, surface: pygame.Surface, center: Tuple[int, int],
                    size: int, color: Tuple[int, int, int]):
         """绘制五角星"""
-        import math
         cx, cy = center
         points = []
         for i in range(5):
@@ -209,7 +211,6 @@ class ResourceGenerator:
             surface.fill((34, 139, 34))
             # 添加一些草的细节
             for _ in range(10):
-                import random
                 x = random.randint(5, size - 5)
                 y = random.randint(5, size - 5)
                 pygame.draw.circle(surface, (50, 180, 50), (x, y), 2)
@@ -241,7 +242,6 @@ class ResourceGenerator:
             surface.fill((0, 100, 0))
             # 树木
             for _ in range(8):
-                import random
                 x = random.randint(10, size - 10)
                 y = random.randint(10, size - 10)
                 pygame.draw.polygon(surface, (0, 139, 0), [
@@ -530,8 +530,6 @@ class ResourceGenerator:
         Returns:
             bytes WAV 格式数据
         """
-        import io
-
         buffer = io.BytesIO()
         with wave.open(buffer, 'wb') as wav_file:
             wav_file.setnchannels(1)  # 单声道
@@ -549,9 +547,6 @@ class ResourceGenerator:
 # 全局生成器实例
 def generate_resources():
     """生成游戏资源"""
-    import sys
-    import os
-
     # 获取资源目录
     base_dir = os.path.dirname(os.path.abspath(__file__))
     resources_dir = os.path.join(base_dir, 'resources')

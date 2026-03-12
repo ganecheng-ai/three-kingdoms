@@ -23,9 +23,6 @@ class CityScene(BaseScene):
         self.city = city
         self.selected_tab = "overview"  # overview, recruit, build, general
 
-        # 按钮区域
-        self.buttons = {}
-
     def handle_events(self, events: list):
         """处理事件"""
         for event in events:
