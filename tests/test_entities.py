@@ -80,10 +80,10 @@ class TestGeneral:
 
     def test_faction_colors(self):
         """测试势力颜色"""
-        from src.entities import General
-        assert "shu" in General.FACTION_COLORS
-        assert "wei" in General.FACTION_COLORS
-        assert "wu" in General.FACTION_COLORS
+        from src.config import FACTION_COLORS
+        assert "shu" in FACTION_COLORS
+        assert "wei" in FACTION_COLORS
+        assert "wu" in FACTION_COLORS
 
     def test_get_info_dict(self):
         """测试获取信息字典"""
@@ -111,11 +111,12 @@ class TestCity:
     def test_city_faction_color(self):
         """测试势力颜色"""
         from src.entities import City
+        from src.config import FACTION_COLORS
         city = City("洛阳", 0, 0, "wei")
-        assert city.color == (100, 100, 200)
+        assert city.color == FACTION_COLORS["wei"]
 
         neutral_city = City("荆州", 0, 0, "neutral")
-        assert neutral_city.color == (139, 90, 43)
+        assert neutral_city.color == FACTION_COLORS["neutral"]
 
     def test_city_faction_name(self):
         """测试势力名称"""

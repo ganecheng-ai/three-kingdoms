@@ -105,6 +105,12 @@ class BattleScene(BaseScene):
         self.winner = None
         self._enemy_turn_timer = 0.0
 
+        # 预生成战场装饰位置，避免每帧随机生成导致闪烁
+        self._decorations = [
+            (random.randint(0, SCREEN_WIDTH), random.randint(250, 550))
+            for _ in range(10)
+        ]
+
         # 初始日志
         self.battle_log.append("战斗开始！")
         self.battle_log.append(f"{self.attacker.name} vs {self.defender.name}")
@@ -247,10 +253,8 @@ class BattleScene(BaseScene):
         ground_rect = pygame.Rect(0, 250, SCREEN_WIDTH, 300)
         pygame.draw.rect(self.screen, (80, 100, 60), ground_rect)
 
-        # 装饰
-        for i in range(10):
-            x = random.randint(0, SCREEN_WIDTH)
-            y = random.randint(250, 550)
+        # 装饰 - 使用预生成的位置
+        for x, y in self._decorations:
             pygame.draw.circle(self.screen, (60, 80, 40), (x, y), 5)
 
     def _draw_ui(self):

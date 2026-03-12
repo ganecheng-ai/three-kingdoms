@@ -6,7 +6,8 @@ Army Class - Three Kingdoms army entity
 import pygame
 from typing import Optional, Dict, List, Tuple, Any
 from src.resource_loader import resource_loader
-from src.config import COLOR_WHITE, COLOR_GOLD, FONT_SIZE_NORMAL, FONT_SIZE_SMALL
+from src.config import COLOR_WHITE, COLOR_GOLD, FONT_SIZE_NORMAL, FONT_SIZE_SMALL, FACTION_COLORS
+from src.utils import draw_status_bar
 
 
 class Army:
@@ -308,13 +309,7 @@ class Army:
         small_font = resource_loader.get_font(FONT_SIZE_SMALL)
 
         # 势力颜色
-        faction_colors_map = {
-            "shu": (50, 200, 50),
-            "wei": (50, 50, 200),
-            "wu": (200, 50, 50),
-            "neutral": (150, 150, 50),
-        }
-        color = faction_colors_map.get(self.owner, (128, 128, 128))
+        color = FACTION_COLORS.get(self.owner, (128, 128, 128))
 
         # 绘制背景框
         if show_details:
@@ -343,10 +338,10 @@ class Army:
         screen.blit(soldier_text, (x + 10, y + 30))
 
         # 绘制士气条
-        self._draw_bar(screen, x + 10, y + 50, "士气", self.morale, 100, (200, 200, 50))
+        draw_status_bar(screen, x + 10, y + 50, "士气", self.morale, 100, (200, 200, 50))
 
         # 绘制体力条
-        self._draw_bar(screen, x + 10, y + 68, "体力", self.stamina, 100, (50, 200, 50))
+        draw_status_bar(screen, x + 10, y + 68, "体力", self.stamina, 100, (50, 200, 50))
 
         # 绘制阵型
         formation_text = small_font.render(f"阵型：{self.formation}", True, COLOR_WHITE)
@@ -364,38 +359,6 @@ class Army:
                 )
                 screen.blit(soldier_count_text, (x + 10, y_offset))
                 y_offset += 16
-
-    def _draw_bar(
-        self,
-        screen: pygame.Surface,
-        x: int,
-        y: int,
-        label: str,
-        current: int,
-        maximum: int,
-        color: Tuple[int, int, int],
-    ):
-        """绘制状态条"""
-        small_font = resource_loader.get_font(FONT_SIZE_SMALL)
-
-        # 标签
-        label_text = small_font.render(f"{label}:", True, COLOR_WHITE)
-        screen.blit(label_text, (x, y))
-
-        # 背景条
-        bar_width = 100
-        bar_height = 10
-        bar_x = x + 35
-        pygame.draw.rect(screen, (80, 80, 80), (bar_x, y + 2, bar_width, bar_height))
-
-        # 实际条
-        if maximum > 0:
-            fill_width = int(bar_width * current / maximum)
-            pygame.draw.rect(screen, color, (bar_x, y + 2, fill_width, bar_height))
-
-        # 数值
-        value_text = small_font.render(f"{current}/{maximum}", True, COLOR_WHITE)
-        screen.blit(value_text, (bar_x + bar_width + 5, y))
 
     def clone(self) -> 'Army':
         """克隆军队"""

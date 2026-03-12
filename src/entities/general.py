@@ -6,7 +6,8 @@ General Class - Three Kingdoms general entity
 import pygame
 from typing import Optional, Dict, List, Tuple, Any
 from src.resource_loader import resource_loader
-from src.config import COLOR_WHITE, COLOR_GOLD, FONT_SIZE_NORMAL, FONT_SIZE_SMALL
+from src.config import COLOR_WHITE, COLOR_GOLD, FONT_SIZE_NORMAL, FONT_SIZE_SMALL, FACTION_COLORS, FACTION_NAMES
+from src.utils import draw_status_bar
 
 
 class General:
@@ -82,20 +83,6 @@ class General:
             "武力": 92, "智力": 65, "统率": 80, "政治": 50,
             "hp": 100, "mp": 60,
         },
-    }
-
-    FACTION_NAMES = {
-        "shu": "蜀",
-        "wei": "魏",
-        "wu": "吴",
-        "neutral": "中立",
-    }
-
-    FACTION_COLORS = {
-        "shu": (50, 200, 50),    # 绿色
-        "wei": (50, 50, 200),    # 蓝色
-        "wu": (200, 50, 50),     # 红色
-        "neutral": (150, 150, 50),  # 黄色
     }
 
     def __init__(self, general_id: str):
@@ -249,7 +236,7 @@ class General:
         """获取武将信息字典"""
         return {
             "姓名": self.name,
-            "势力": self.FACTION_NAMES.get(self.faction, "未知"),
+            "势力": FACTION_NAMES.get(self.faction, "未知"),
             "等级": self.level,
             "武力": self.wu_li,
             "智力": self.zhi_li,
@@ -272,7 +259,7 @@ class General:
         small_font = resource_loader.get_font(FONT_SIZE_SMALL)
 
         # 势力颜色
-        faction_color = self.FACTION_COLORS.get(self.faction, COLOR_WHITE)
+        faction_color = FACTION_COLORS.get(self.faction, COLOR_WHITE)
 
         # 绘制背景框
         if show_details:
@@ -297,7 +284,7 @@ class General:
         y_offset = y + 35
         attributes = [
             ("等级", self.level),
-            ("势力", self.FACTION_NAMES.get(self.faction, "未知")),
+            ("势力", FACTION_NAMES.get(self.faction, "未知")),
             ("武力", self.wu_li),
             ("智力", self.zhi_li),
             ("统率", self.tong_shuai),
@@ -310,38 +297,6 @@ class General:
             y_offset += 18
 
         # 绘制 HP/MP 条
-        self._draw_bar(screen, x + 10, y_offset, "HP", self.hp, self.max_hp, (200, 50, 50))
+        draw_status_bar(screen, x + 10, y_offset, "HP", self.hp, self.max_hp, (200, 50, 50), bar_width=80)
         y_offset += 15
-        self._draw_bar(screen, x + 10, y_offset, "MP", self.mp, self.max_mp, (50, 50, 200))
-
-    def _draw_bar(
-        self,
-        screen: pygame.Surface,
-        x: int,
-        y: int,
-        label: str,
-        current: int,
-        maximum: int,
-        color: Tuple[int, int, int],
-    ):
-        """绘制状态条"""
-        small_font = resource_loader.get_font(FONT_SIZE_SMALL)
-
-        # 标签
-        label_text = small_font.render(f"{label}:", True, COLOR_WHITE)
-        screen.blit(label_text, (x, y))
-
-        # 背景条
-        bar_width = 80
-        bar_height = 10
-        bar_x = x + 35
-        pygame.draw.rect(screen, (80, 0, 0), (bar_x, y + 2, bar_width, bar_height))
-
-        # 实际条
-        if maximum > 0:
-            fill_width = int(bar_width * current / maximum)
-            pygame.draw.rect(screen, color, (bar_x, y + 2, fill_width, bar_height))
-
-        # 数值
-        value_text = small_font.render(f"{current}/{maximum}", True, COLOR_WHITE)
-        screen.blit(value_text, (bar_x + bar_width + 5, y))
+        draw_status_bar(screen, x + 10, y_offset, "MP", self.mp, self.max_mp, (50, 50, 200), bar_width=80)

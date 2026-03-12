@@ -5,13 +5,12 @@ Resource Generator - Programmatically generate game resources
 
 import pygame
 import os
-import sys
 import wave
 import struct
 import math
 import random
 import io
-from typing import Tuple, Optional
+from typing import Tuple
 
 
 class ResourceGenerator:

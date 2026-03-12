@@ -40,3 +40,19 @@ SCENE_BATTLE = "battle"
 STATE_RUNNING = "running"
 STATE_PAUSED = "paused"
 STATE_GAME_OVER = "game_over"
+
+# 势力颜色
+FACTION_COLORS = {
+    "shu": (50, 200, 50),      # 蜀 - 绿色
+    "wei": (50, 50, 200),      # 魏 - 蓝色
+    "wu": (200, 50, 50),       # 吴 - 红色
+    "neutral": (150, 150, 50), # 中立 - 黄色
+}
+
+# 势力名称
+FACTION_NAMES = {
+    "shu": "蜀",
+    "wei": "魏",
+    "wu": "吴",
+    "neutral": "中立",
+}

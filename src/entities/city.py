@@ -4,26 +4,12 @@ City Class - Three Kingdoms city entity
 """
 
 import pygame
-from typing import Optional, Dict, Any, Tuple
+from typing import Dict, Any, Tuple
+from src.config import FACTION_COLORS, FACTION_NAMES
 
 
 class City:
     """城市类"""
-
-    # 势力颜色
-    FACTION_COLORS = {
-        "wei": (100, 100, 200),   # 魏 - 蓝色
-        "shu": (100, 200, 100),   # 蜀 - 绿色
-        "wu": (200, 100, 100),    # 吴 - 红色
-        "neutral": (139, 90, 43),  # 中立 - 棕色
-    }
-
-    FACTION_NAMES = {
-        "wei": "魏",
-        "shu": "蜀",
-        "wu": "吴",
-        "neutral": "中立",
-    }
 
     def __init__(self, name: str, x: int, y: int, owner: str = "neutral"):
         """初始化城市
@@ -63,12 +49,12 @@ class City:
     @property
     def color(self) -> tuple:
         """获取势力颜色"""
-        return self.FACTION_COLORS.get(self.owner, self.FACTION_COLORS["neutral"])
+        return FACTION_COLORS.get(self.owner, FACTION_COLORS["neutral"])
 
     @property
     def faction_name(self) -> str:
         """获取势力名称"""
-        return self.FACTION_NAMES.get(self.owner, "未知")
+        return FACTION_NAMES.get(self.owner, "未知")
 
     def draw(self, screen: pygame.Surface, scale: float = 1.0, offset_y: int = 0):
         """绘制城市

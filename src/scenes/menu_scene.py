@@ -74,7 +74,6 @@ class MenuScene(BaseScene):
         super().__init__(screen)
         self.game = game
         self.menu_items: List[MenuItem] = []
-        self.clock = pygame.time.Clock()
 
         # 动画管理器
         self.animation_manager = AnimationManager()

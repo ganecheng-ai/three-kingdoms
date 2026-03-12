@@ -16,7 +16,7 @@ from src.animations import (
 from src.config import (
     SCREEN_WIDTH, SCREEN_HEIGHT, COLOR_WHITE, COLOR_GOLD,
     COLOR_BROWN, COLOR_DARK_GREEN, COLOR_SAND, COLOR_WATER,
-    FONT_SIZE_NORMAL, FONT_SIZE_SMALL
+    FONT_SIZE_NORMAL, FONT_SIZE_SMALL, FACTION_NAMES
 )
 
 
@@ -252,8 +252,7 @@ class WorldScene(BaseScene):
 
         # 玩家势力信息
         font = resource_loader.get_font(FONT_SIZE_NORMAL)
-        faction_names = {"shu": "蜀", "wei": "魏", "wu": "吴"}
-        player_text = font.render(f"势力：{faction_names.get(self.player_faction, '未知')}", True, COLOR_WHITE)
+        player_text = font.render(f"势力：{FACTION_NAMES.get(self.player_faction, '未知')}", True, COLOR_WHITE)
         self.screen.blit(player_text, (10, 8))
 
         # 回合信息
@@ -294,8 +293,7 @@ class WorldScene(BaseScene):
         y_offset += 35
 
         # 势力
-        faction_names = {"shu": "蜀", "wei": "魏", "wu": "吴", "neutral": "中立"}
-        faction_text = small_font.render(f"势力：{faction_names.get(self.selected_city.owner, '未知')}", True, COLOR_WHITE)
+        faction_text = small_font.render(f"势力：{FACTION_NAMES.get(self.selected_city.owner, '未知')}", True, COLOR_WHITE)
         self.screen.blit(faction_text, (panel_x + 10, y_offset))
         y_offset += 25
 
