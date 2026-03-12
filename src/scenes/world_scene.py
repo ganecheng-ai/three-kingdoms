@@ -7,57 +7,13 @@ import pygame
 import math
 from typing import Dict, List, Optional
 from .base_scene import BaseScene
+from src.entities import City
 from src.resource_loader import resource_loader
 from src.config import (
     SCREEN_WIDTH, SCREEN_HEIGHT, COLOR_WHITE, COLOR_GOLD,
     COLOR_BROWN, COLOR_DARK_GREEN, COLOR_SAND, COLOR_WATER,
     FONT_SIZE_NORMAL, FONT_SIZE_SMALL
 )
-
-
-class City:
-    """城市类"""
-
-    def __init__(self, name: str, x: int, y: int, owner: str = "neutral"):
-        self.name = name
-        self.x = x
-        self.y = y
-        self.owner = owner  # "wei", "shu", "wu", "neutral"
-        self.population = 10000
-        self.gold = 1000
-        self.food = 1000
-        self.soldiers = 1000
-        self.rect = pygame.Rect(x - 30, y - 30, 60, 60)
-
-        # 势力颜色
-        self.owner_colors = {
-            "wei": (100, 100, 200),  # 魏 - 蓝色
-            "shu": (100, 200, 100),  # 蜀 - 绿色
-            "wu": (200, 100, 100),   # 吴 - 红色
-            "neutral": COLOR_BROWN    # 中立 - 棕色
-        }
-
-    def draw(self, screen: pygame.Surface):
-        """绘制城市"""
-        # 绘制城市区域
-        color = self.owner_colors.get(self.owner, COLOR_BROWN)
-        pygame.draw.circle(screen, color, (self.x, self.y), 25)
-        pygame.draw.circle(screen, COLOR_WHITE, (self.x, self.y), 25, 2)
-
-        # 绘制城市名称
-        font = resource_loader.get_font(FONT_SIZE_SMALL)
-        name_text = font.render(self.name, True, COLOR_WHITE)
-        name_rect = name_text.get_rect(center=(self.x, self.y - 40))
-        screen.blit(name_text, name_rect)
-
-        # 绘制兵力
-        soldier_text = font.render(f"{self.soldiers}", True, COLOR_WHITE)
-        soldier_rect = soldier_text.get_rect(center=(self.x, self.y + 45))
-        screen.blit(soldier_text, soldier_rect)
-
-    def is_clicked(self, pos: tuple) -> bool:
-        """检查是否被点击"""
-        return self.rect.collidepoint(pos)
 
 
 class WorldScene(BaseScene):
@@ -69,10 +25,16 @@ class WorldScene(BaseScene):
         self.cities: Dict[str, City] = {}
         self.selected_city: Optional[City] = None
         self.player_faction = "shu"  # 玩家势力
+        self.turn = 1
 
         # 地图偏移（用于滚动）
         self.map_offset_x = 0
         self.map_offset_y = 0
+
+        # 按钮
+        self.end_turn_btn = pygame.Rect(SCREEN_WIDTH - 120, 5, 110, 30)
+        self.move_btn: Optional[pygame.Rect] = None
+        self.recruit_btn: Optional[pygame.Rect] = None
 
         # 初始化城市
         self._init_cities()
@@ -119,15 +81,47 @@ class WorldScene(BaseScene):
 
     def _handle_left_click(self, pos: tuple):
         """处理左键点击"""
+        # 检查是否点击了结束回合按钮
+        if self.end_turn_btn.collidepoint(pos):
+            self._end_turn()
+            return
+
+        # 检查是否点击了城市信息面板的按钮
+        if self.selected_city:
+            if self.move_btn and self.move_btn.collidepoint(pos):
+                self._move_to_city()
+                return
+            if self.recruit_btn and self.recruit_btn.collidepoint(pos):
+                self._enter_city()
+                return
+
         # 检查是否点击了城市
         for city in self.cities.values():
             if city.is_clicked(pos):
                 self.selected_city = city
-                break
+                return
 
-        # 如果点击了空白处，取消选择
-        if not self.selected_city or not self.selected_city.is_clicked(pos):
-            pass  # 保持当前选择
+        # 如果点击了空白处，不取消选择（保持当前选择）
+
+    def _end_turn(self):
+        """结束回合"""
+        self.turn += 1
+        # 所有城市执行回合结束处理
+        for city in self.cities.values():
+            city.end_turn()
+
+    def _move_to_city(self):
+        """移动到城市（进入城市管理界面）"""
+        if self.selected_city:
+            # 检查是否是玩家的城市
+            if self.selected_city.owner == self.player_faction:
+                self.game.current_city = self.selected_city
+                self.next_scene = "city"
+                self.running = False
+
+    def _enter_city(self):
+        """进入城市"""
+        self._move_to_city()
 
     def update(self, delta_time: float):
         """更新逻辑"""
@@ -196,13 +190,12 @@ class WorldScene(BaseScene):
         self.screen.blit(player_text, (10, 8))
 
         # 回合信息
-        turn_text = font.render("第 1 回合", True, COLOR_WHITE)
+        turn_text = font.render(f"第 {self.turn} 回合", True, COLOR_WHITE)
         turn_rect = turn_text.get_rect(center=(SCREEN_WIDTH // 2, 20))
         self.screen.blit(turn_text, turn_rect)
 
-        # 右侧按钮
-        end_turn_btn = pygame.Rect(SCREEN_WIDTH - 120, 5, 110, 30)
-        pygame.draw.rect(self.screen, COLOR_GOLD, end_turn_btn)
+        # 结束回合按钮
+        pygame.draw.rect(self.screen, COLOR_GOLD, self.end_turn_btn)
         end_text = resource_loader.get_font(FONT_SIZE_SMALL).render("结束回合", True, COLOR_BLACK)
         self.screen.blit(end_text, (SCREEN_WIDTH - 95, 13))
 
@@ -213,7 +206,7 @@ class WorldScene(BaseScene):
     def _draw_city_info(self):
         """绘制城市信息面板"""
         panel_width = 250
-        panel_height = 200
+        panel_height = 220
         panel_x = SCREEN_WIDTH - panel_width - 20
         panel_y = 60
 
@@ -232,6 +225,12 @@ class WorldScene(BaseScene):
         title = font.render(self.selected_city.name, True, COLOR_GOLD)
         self.screen.blit(title, (panel_x + 10, y_offset))
         y_offset += 35
+
+        # 势力
+        faction_names = {"shu": "蜀", "wei": "魏", "wu": "吴", "neutral": "中立"}
+        faction_text = small_font.render(f"势力：{faction_names.get(self.selected_city.owner, '未知')}", True, COLOR_WHITE)
+        self.screen.blit(faction_text, (panel_x + 10, y_offset))
+        y_offset += 25
 
         # 人口
         pop_text = small_font.render(f"人口：{self.selected_city.population}", True, COLOR_WHITE)
@@ -258,14 +257,16 @@ class WorldScene(BaseScene):
         btn_height = 30
         btn_y = y_offset
 
-        # 移动按钮
-        move_btn = pygame.Rect(panel_x + 10, btn_y, btn_width, btn_height)
-        pygame.draw.rect(self.screen, (100, 100, 150), move_btn)
-        move_text = small_font.render("移动", True, COLOR_WHITE)
+        # 移动/进入按钮
+        self.move_btn = pygame.Rect(panel_x + 10, btn_y, btn_width, btn_height)
+        is_player_city = self.selected_city.owner == self.player_faction
+        move_color = (100, 150, 100) if is_player_city else (100, 100, 100)
+        pygame.draw.rect(self.screen, move_color, self.move_btn)
+        move_text = small_font.render("进入" if is_player_city else "移动", True, COLOR_WHITE)
         self.screen.blit(move_text, (panel_x + 25, btn_y + 7))
 
-        # 招兵按钮
-        recruit_btn = pygame.Rect(panel_x + 90, btn_y, btn_width, btn_height)
-        pygame.draw.rect(self.screen, (100, 150, 100), recruit_btn)
+        # 招兵按钮（只有玩家城市可用）
+        self.recruit_btn = pygame.Rect(panel_x + 90, btn_y, btn_width, btn_height)
+        pygame.draw.rect(self.screen, move_color if is_player_city else (100, 100, 100), self.recruit_btn)
         recruit_text = small_font.render("招兵", True, COLOR_WHITE)
         self.screen.blit(recruit_text, (panel_x + 105, btn_y + 7))

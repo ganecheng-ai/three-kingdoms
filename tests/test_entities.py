@@ -96,5 +96,141 @@ class TestGeneral:
         assert "等级" in info
 
 
+class TestCity:
+    """城市类测试"""
+
+    def test_create_city(self):
+        """测试创建城市"""
+        from src.entities import City
+        chengdu = City("成都", 100, 200, "shu")
+        assert chengdu.name == "成都"
+        assert chengdu.x == 100
+        assert chengdu.y == 200
+        assert chengdu.owner == "shu"
+
+    def test_city_faction_color(self):
+        """测试势力颜色"""
+        from src.entities import City
+        city = City("洛阳", 0, 0, "wei")
+        assert city.color == (100, 100, 200)
+
+        neutral_city = City("荆州", 0, 0, "neutral")
+        assert neutral_city.color == (139, 90, 43)
+
+    def test_city_faction_name(self):
+        """测试势力名称"""
+        from src.entities import City
+        city = City("建业", 0, 0, "wu")
+        assert city.faction_name == "吴"
+
+    def test_recruit_soldiers(self):
+        """测试招募士兵"""
+        from src.entities import City
+        city = City("成都", 0, 0, "shu")
+        initial_gold = city.gold
+        initial_soldiers = city.soldiers
+
+        success, count, cost = city.recruit_soldiers("infantry", 5)
+        assert success is True
+        assert count == 5
+        assert cost == 50
+        assert city.gold == initial_gold - 50
+        assert city.soldiers == initial_soldiers + 5
+
+    def test_recruit_soldiers_not_enough_gold(self):
+        """测试金钱不足时招募失败"""
+        from src.entities import City
+        city = City("成都", 0, 0, "shu")
+        city.gold = 10
+
+        success, count, cost = city.recruit_soldiers("cavalry", 5)
+        assert success is False
+        assert count == 0
+        assert cost == 0
+
+    def test_collect_tax(self):
+        """测试征收税款"""
+        from src.entities import City
+        city = City("成都", 0, 0, "shu")
+        initial_gold = city.gold
+
+        tax = city.collect_tax()
+        assert tax > 0
+        assert city.gold > initial_gold
+
+    def test_collect_food(self):
+        """测试征收粮草"""
+        from src.entities import City
+        city = City("成都", 0, 0, "shu")
+        initial_food = city.food
+
+        food = city.collect_food()
+        assert food > 0
+        assert city.food > initial_food
+
+    def test_upgrade_building(self):
+        """测试升级建筑"""
+        from src.entities import City
+        city = City("成都", 0, 0, "shu")
+        initial_gold = city.gold
+
+        success, cost = city.upgrade_building("farm")
+        assert success is True
+        assert cost == 200
+        assert city.buildings["farm"] == 2
+        assert city.gold == initial_gold - 200
+
+    def test_upgrade_building_max_level(self):
+        """测试建筑已满级时升级失败"""
+        from src.entities import City
+        city = City("成都", 0, 0, "shu")
+        city.buildings["farm"] = 5
+
+        success, cost = city.upgrade_building("farm")
+        assert success is False
+        assert cost == 0
+
+    def test_add_remove_general(self):
+        """测试添加和移除武将"""
+        from src.entities import City, General
+        city = City("成都", 0, 0, "shu")
+        guan_yu = General("guan_yu")
+
+        # 添加武将
+        assert city.add_general(guan_yu) is True
+        assert guan_yu in city.generals
+        assert len(city.generals) == 1
+
+        # 重复添加失败
+        assert city.add_general(guan_yu) is False
+
+        # 移除武将
+        assert city.remove_general(guan_yu) is True
+        assert guan_yu not in city.generals
+
+    def test_get_info_dict(self):
+        """测试获取城市信息字典"""
+        from src.entities import City
+        city = City("洛阳", 0, 0, "wei")
+        info = city.get_info_dict()
+        assert info["城市"] == "洛阳"
+        assert info["势力"] == "魏"
+        assert "人口" in info
+        assert "兵力" in info
+        assert "金钱" in info
+        assert "粮草" in info
+
+    def test_end_turn(self):
+        """测试结束回合处理"""
+        from src.entities import City
+        city = City("成都", 0, 0, "shu")
+        initial_population = city.population
+        initial_food = city.food
+
+        city.end_turn()
+        assert city.population >= initial_population
+        assert city.food > initial_food
+
+
 if __name__ == "__main__":
     pytest.main([__file__, "-v"])
