@@ -22,7 +22,7 @@ COLOR_WATER = (65, 105, 225)
 
 # 游戏标题
 GAME_TITLE = "三国霸业"
-GAME_VERSION = "0.5.2"
+GAME_VERSION = "0.6.0"
 
 # 字体设置
 FONT_SIZE_TITLE = 48
