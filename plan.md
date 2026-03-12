@@ -89,6 +89,13 @@ three-kingdoms/
 
 ## 发布记录
 
+### v0.6.1 (2026-03-12)
+- 修复城市场景属性错误
+  - 修复 city_scene.py 中 battle_log 属性未定义的问题，改用 message 属性
+  - 为 _draw_build 方法添加 self.city 检查，防止空指针异常
+- 更新 README.md 版本号显示至 v0.6.0
+- 所有 78 个单元测试通过
+
 ### v0.6.0 (2026-03-12)
 - 代码质量优化和重构
   - 移除未使用的导入 (sys, Optional 等)
