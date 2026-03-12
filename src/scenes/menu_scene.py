@@ -9,6 +9,7 @@ import random
 from typing import List, Tuple
 from .base_scene import BaseScene
 from src.resource_loader import resource_loader
+from src.logger import log_info, log_debug, log_error
 from src.animations import (
     FadeAnimation, PulseAnimation, FloatAnimation,
     AnimationManager, EasingType, particle_system,
@@ -111,13 +112,19 @@ class MenuScene(BaseScene):
 
     def _start_game(self):
         """开始游戏"""
+        log_info("点击开始游戏按钮")
         resource_loader.play_sound("click.wav")
+        # 设置标志，等待淡出动画完成
+        self._pending_start_game = True
         # 添加淡出动画
-        self.fade_anim = FadeAnimation(fade_in=False, duration=0.3, on_complete=lambda: setattr(self, '_pending_start_game', True))
+        log_debug("创建淡出动画")
+        self.fade_anim = FadeAnimation(fade_in=False, duration=0.3)
 
     def _execute_start_game(self):
         """执行开始游戏（动画完成后）"""
+        log_info("执行开始游戏，切换到世界地图场景")
         self.next_scene = "world"
+        self.running = False
 
     def _load_game(self):
         """载入游戏"""
@@ -168,12 +175,18 @@ class MenuScene(BaseScene):
         # 更新粒子系统
         particle_system.update(delta_time)
 
-        # 检查淡出动画完成后的操作
-        if self.fade_anim.is_complete:
-            if hasattr(self, '_pending_start_game') and self._pending_start_game:
+        # 检查是否有待执行的操作
+        if hasattr(self, '_pending_start_game') and self._pending_start_game:
+            # 检查淡出动画是否完成
+            if self.fade_anim.is_complete:
+                log_debug("淡出动画完成，执行开始游戏")
                 self._execute_start_game()
                 delattr(self, '_pending_start_game')
-            if hasattr(self, '_pending_quit_game') and self._pending_quit_game:
+            else:
+                log_debug(f"等待淡出动画完成... 进度: {self.fade_anim.get_progress():.2f}")
+
+        if hasattr(self, '_pending_quit_game') and self._pending_quit_game:
+            if self.fade_anim.is_complete:
                 self._execute_quit_game()
                 delattr(self, '_pending_quit_game')
 

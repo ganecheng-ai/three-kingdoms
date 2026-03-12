@@ -89,6 +89,16 @@ three-kingdoms/
 
 ## 发布记录
 
+### v0.6.3 (2026-03-12)
+- 添加游戏日志系统
+  - 创建日志模块 logger.py，记录游戏运行状态
+  - 日志文件位置: Windows: %APPDATA%/ThreeKingdoms/game.log, Linux/macOS: ~/.three_kingdoms/game.log
+  - 在关键位置添加日志记录（游戏启动、场景切换、按钮点击等）
+- 修复菜单场景逻辑
+  - 修改 _start_game 方法，先设置标志再创建动画
+  - 改进 update 方法中的动画完成检测逻辑
+- 所有 78 个单元测试通过
+
 ### v0.6.2 (2026-03-12)
 - 同步版本号到 v0.6.1
   - 修复 main.py 中版本号不一致问题 (0.5.2 -> 0.6.1)

@@ -7,6 +7,7 @@ import pygame
 from typing import Dict, Type, Optional
 from src.config import SCREEN_WIDTH, SCREEN_HEIGHT, FPS, GAME_TITLE
 from src.resource_loader import resource_loader
+from src.logger import log_info, log_debug, log_error
 from src.scenes.base_scene import BaseScene
 from src.scenes.menu_scene import MenuScene
 from src.scenes.world_scene import WorldScene
@@ -19,6 +20,7 @@ class Game:
 
     def __init__(self):
         # 初始化 Pygame
+        log_info("初始化 Pygame...")
         pygame.init()
 
         # 尝试初始化音频（可选）
@@ -26,10 +28,13 @@ class Game:
         try:
             pygame.mixer.init()
             self.audio_available = True
+            log_info("音频初始化成功")
         except pygame.error:
+            log_info("警告：音频设备不可用，游戏将以静音模式运行")
             print("警告：音频设备不可用，游戏将以静音模式运行")
 
         # 创建窗口
+        log_debug(f"创建游戏窗口: {SCREEN_WIDTH}x{SCREEN_HEIGHT}")
         self.screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
         pygame.display.set_caption(GAME_TITLE)
 
@@ -56,12 +61,16 @@ class Game:
         self.turn = 1
 
         # 初始化资源
+        log_info("加载游戏资源...")
         resource_loader.set_audio_available(self.audio_available)
         resource_loader.preload_resources()
+        log_info("游戏初始化完成")
 
     def switch_scene(self, scene_name: str):
         """切换场景"""
+        log_info(f"切换场景到: {scene_name}")
         if scene_name not in self.scenes:
+            log_error(f"场景不存在：{scene_name}")
             print(f"场景不存在：{scene_name}")
             return
 
@@ -82,6 +91,8 @@ class Game:
         else:
             self.current_scene = scene_class(self.screen, self)
 
+        log_debug(f"场景 {scene_name} 创建完成")
+
     def push_scene(self, scene_name: str):
         """压入场景（用于子界面）"""
         if self.current_scene:
@@ -97,6 +108,7 @@ class Game:
     def run(self):
         """运行游戏主循环"""
         # 从主菜单开始
+        log_info("开始游戏主循环")
         self.switch_scene("menu")
 
         while self.running:
@@ -112,10 +124,12 @@ class Game:
                 if not self.current_scene.running:
                     if self.current_scene.next_scene is None:
                         # 退出游戏
+                        log_info("场景结束，退出游戏")
                         self.running = False
                     else:
                         # 切换到新场景
                         next_scene = self.current_scene.next_scene
+                        log_debug(f"场景切换: {next_scene}")
                         self.switch_scene(next_scene)
                     continue
 
