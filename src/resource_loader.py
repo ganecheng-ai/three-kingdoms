@@ -37,6 +37,45 @@ class ResourceLoader:
         # 默认字体
         self.default_font: Optional[pygame.font.Font] = None
 
+        # 音量设置
+        self.sound_volume = 0.7
+        self.music_volume = 0.5
+
+    def set_sound_volume(self, volume: float):
+        """设置音效音量 (0.0-1.0)"""
+        self.sound_volume = max(0.0, min(1.0, volume))
+        pygame.mixer.set_volume(self.sound_volume)
+
+    def set_music_volume(self, volume: float):
+        """设置背景音乐音量 (0.0-1.0)"""
+        self.music_volume = max(0.0, min(1.0, volume))
+        pygame.mixer.music.set_volume(self.music_volume)
+
+    def play_sound(self, name: str):
+        """播放音效"""
+        sound = self.load_sound(name)
+        if sound:
+            sound.set_volume(self.sound_volume)
+            sound.play()
+
+    def play_music(self, name: str, loops: int = -1):
+        """播放背景音乐"""
+        if self.load_music(name):
+            self.set_music_volume(self.music_volume)
+            pygame.mixer.music.play(loops=loops)
+
+    def stop_music(self):
+        """停止背景音乐"""
+        pygame.mixer.music.stop()
+
+    def pause_music(self):
+        """暂停背景音乐"""
+        pygame.mixer.music.pause()
+
+    def unpause_music(self):
+        """继续播放背景音乐"""
+        pygame.mixer.music.unpause()
+
     def init_fonts(self):
         """初始化字体"""
         # 尝试加载中文字体
@@ -132,6 +171,17 @@ class ResourceLoader:
         """预加载资源"""
         print("预加载资源...")
         self.init_fonts()
+
+        # 预加载音效
+        sound_types = ["click", "battle", "victory", "defeat", "march", "build"]
+        for sound_type in sound_types:
+            self.load_sound(f"{sound_type}.wav")
+        print("  音效加载完成")
+
+        # 预加载背景音乐
+        self.load_music("bgm_main.wav")
+        print("  背景音乐加载完成")
+
         print("资源加载完成")
 
 

@@ -5,6 +5,9 @@ Resource Generator - Programmatically generate game resources
 
 import pygame
 import os
+import wave
+import struct
+import math
 from typing import Tuple, Optional
 
 
@@ -359,7 +362,188 @@ class ResourceGenerator:
             pygame.image.save(flag_img, save_path)
             print(f"  已生成：{save_path}")
 
+        print("图片资源生成完成!")
+
+        # 生成音效
+        print("正在生成音效...")
+        sound_types = ["click", "battle", "victory", "defeat", "march", "build"]
+        for sound_type in sound_types:
+            wav_data = self.generate_sound_effect(sound_type)
+            save_path = os.path.join(self.sounds_dir, f"{sound_type}.wav")
+            with open(save_path, 'wb') as f:
+                f.write(wav_data)
+            print(f"  已生成：{save_path}")
+
+        # 生成背景音乐
+        print("正在生成背景音乐...")
+        music_data = self.generate_background_music(60)  # 60 秒循环
+        music_path = os.path.join(self.sounds_dir, "bgm_main.wav")
+        with open(music_path, 'wb') as f:
+            f.write(music_data)
+        print(f"  已生成：{music_path}")
+
         print("资源生成完成!")
+
+    def generate_sound_effect(self, sound_type: str) -> bytes:
+        """生成音效 WAV 数据
+        程序化生成简单的复古游戏音效
+
+        Args:
+            sound_type: 音效类型 (click, battle, victory, defeat, march, build)
+
+        Returns:
+            bytes WAV 格式音频数据
+        """
+        sample_rate = 22050
+        duration = 0.3
+        num_samples = int(sample_rate * duration)
+
+        samples = []
+
+        if sound_type == "click":
+            # UI 点击音效 - 简短的滴答声
+            for i in range(num_samples):
+                t = i / sample_rate
+                # 高频短促音
+                value = int(127 * math.sin(2 * math.pi * 800 * t) * math.exp(-t * 30))
+                samples.append(max(-128, min(127, value)))
+
+        elif sound_type == "battle":
+            # 战斗音效 - 撞击声
+            duration = 0.5
+            num_samples = int(sample_rate * duration)
+            for i in range(num_samples):
+                t = i / sample_rate
+                # 低频撞击 + 噪声
+                value = int(100 * math.sin(2 * math.pi * 150 * t) * math.exp(-t * 10))
+                # 添加一些"噪声"模拟撞击
+                noise = int(50 * (i % 7 - 3.5) / 3.5 * math.exp(-t * 15))
+                samples.append(max(-128, min(127, value + noise)))
+
+        elif sound_type == "victory":
+            # 胜利音效 - 上升的琶音
+            duration = 1.0
+            num_samples = int(sample_rate * duration)
+            notes = [523.25, 659.25, 783.99, 1046.50]  # C5, E5, G5, C6
+            for i in range(num_samples):
+                t = i / sample_rate
+                note_index = min(int(t * 4), 3)
+                value = int(100 * math.sin(2 * math.pi * notes[note_index] * t))
+                value = int(value * math.exp(-t * 3))
+                samples.append(max(-128, min(127, value)))
+
+        elif sound_type == "defeat":
+            # 失败音效 - 下降的音调
+            duration = 1.0
+            num_samples = int(sample_rate * duration)
+            for i in range(num_samples):
+                t = i / sample_rate
+                freq = 400 - 200 * t  # 频率下降
+                value = int(100 * math.sin(2 * math.pi * freq * t) * math.exp(-t * 2))
+                samples.append(max(-128, min(127, value)))
+
+        elif sound_type == "march":
+            # 行军音效 - 节奏鼓点
+            duration = 0.8
+            num_samples = int(sample_rate * duration)
+            for i in range(num_samples):
+                t = i / sample_rate
+                # 模拟鼓点节奏
+                beat = math.sin(2 * math.pi * 3 * t) > 0.7
+                if beat:
+                    value = int(80 * math.sin(2 * math.pi * 100 * t) * math.exp(-((t % 0.33) * 10)))
+                else:
+                    value = 0
+                samples.append(max(-128, min(127, value)))
+
+        elif sound_type == "build":
+            # 建造音效 - 上升的叮当声
+            duration = 0.6
+            num_samples = int(sample_rate * duration)
+            for i in range(num_samples):
+                t = i / sample_rate
+                freq = 600 + 300 * t  # 频率上升
+                value = int(80 * math.sin(2 * math.pi * freq * t) * math.exp(-t * 5))
+                samples.append(max(-128, min(127, value)))
+
+        else:
+            # 默认静音
+            samples = [0] * num_samples
+
+        # 生成 WAV 文件数据
+        return self._create_wav_data(samples, sample_rate)
+
+    def generate_background_music(self, duration: int = 60) -> bytes:
+        """生成背景音乐 WAV 数据
+        程序化生成简单的循环背景音乐
+
+        Args:
+            duration: 音乐时长 (秒)
+
+        Returns:
+            bytes WAV 格式音频数据
+        """
+        sample_rate = 22050
+        num_samples = sample_rate * duration
+
+        # 五声音阶：宫商角徵羽 (C D E G A)
+        pentatonic = [261.63, 293.66, 329.63, 392.00, 440.00]  # C4, D4, E4, G4, A4
+        bass_pentatonic = [f / 2 for f in pentatonic]  # 低音
+
+        samples = []
+        beat_duration = 0.5  # 每个音符的时长
+
+        for i in range(num_samples):
+            t = i / sample_rate
+            beat_index = int(t / beat_duration)
+
+            # 主旋律 - 使用五声音阶
+            melody_note = pentatonic[beat_index % 5]
+            melody_phase = (t % beat_duration) / beat_duration
+
+            # 伴奏低音
+            bass_note = bass_pentatonic[(beat_index // 2) % 5]
+
+            # 混合主旋律和伴奏
+            melody_vol = math.sin(math.pi * melody_phase) * math.exp(-melody_phase * 0.5)
+            bass_vol = 0.3 * math.sin(math.pi * melody_phase)
+
+            melody = 60 * math.sin(2 * math.pi * melody_note * t) * melody_vol
+            bass = 40 * math.sin(2 * math.pi * bass_note * t) * bass_vol
+
+            # 添加和声
+            harmony_note = pentatonic[(beat_index + 2) % 5]
+            harmony = 30 * math.sin(2 * math.pi * harmony_note * t) * melody_vol * 0.5
+
+            value = int(melody + bass + harmony)
+            samples.append(max(-128, min(127, value)))
+
+        return self._create_wav_data(samples, sample_rate)
+
+    def _create_wav_data(self, samples: list, sample_rate: int) -> bytes:
+        """创建 WAV 文件数据
+
+        Args:
+            samples: 音频样本列表 (-128 到 127)
+            sample_rate: 采样率
+
+        Returns:
+            bytes WAV 格式数据
+        """
+        import io
+
+        buffer = io.BytesIO()
+        with wave.open(buffer, 'wb') as wav_file:
+            wav_file.setnchannels(1)  # 单声道
+            wav_file.setsampwidth(1)  # 8 位
+            wav_file.setframerate(sample_rate)
+
+            for sample in samples:
+                # 转换为 8 位无符号
+                unsigned_sample = sample + 128
+                wav_file.writeframes(struct.pack('B', max(0, min(255, unsigned_sample))))
+
+        return buffer.getvalue()
 
 
 # 全局生成器实例

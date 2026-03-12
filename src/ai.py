@@ -73,6 +73,7 @@ class AIGeneral:
 
         # 根据实力决定战略
         if total_soldiers < 5000:
+            # 兵力不足，优先发展
             self.strategy = "development"
         elif total_gold > 2000 and total_food > 2000:
             # 资源充足，可以扩张
@@ -83,8 +84,8 @@ class AIGeneral:
         else:
             self.strategy = "development"
 
-        # 随机因素
-        if random.random() < self.params["random_factor"]:
+        # 随机因素（只在不影响核心战略的情况下生效）
+        if total_soldiers >= 5000 and random.random() < self.params["random_factor"]:
             strategies = ["development", "expansion", "war"]
             self.strategy = random.choice(strategies)
 

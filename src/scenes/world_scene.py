@@ -9,6 +9,10 @@ from typing import Dict, List, Optional
 from .base_scene import BaseScene
 from src.entities import City
 from src.resource_loader import resource_loader
+from src.animations import (
+    AnimationManager, ScaleAnimation, FloatAnimation,
+    ShakeAnimation, FadeAnimation, particle_system,
+)
 from src.config import (
     SCREEN_WIDTH, SCREEN_HEIGHT, COLOR_WHITE, COLOR_GOLD,
     COLOR_BROWN, COLOR_DARK_GREEN, COLOR_SAND, COLOR_WATER,
@@ -30,6 +34,21 @@ class WorldScene(BaseScene):
         # 地图偏移（用于滚动）
         self.map_offset_x = 0
         self.map_offset_y = 0
+
+        # 动画管理器
+        self.animation_manager = AnimationManager()
+
+        # 城市选择动画
+        self.city_scale_anim: Optional[ScaleAnimation] = None
+
+        # 浮动动画 - 用于选中的城市
+        self.city_float = FloatAnimation(amplitude=3, frequency=2.0)
+
+        # 震动动画 - 用于战斗提示
+        self.shake_anim: Optional[ShakeAnimation] = None
+
+        # 淡入动画
+        self.fade_anim = FadeAnimation(fade_in=True, duration=0.5)
 
         # 按钮
         self.end_turn_btn = pygame.Rect(SCREEN_WIDTH - 120, 5, 110, 30)
@@ -99,52 +118,100 @@ class WorldScene(BaseScene):
         for city in self.cities.values():
             if city.is_clicked(pos):
                 self.selected_city = city
+                # 播放点击音效和动画
+                resource_loader.play_sound("click.wav")
+                self.city_scale_anim = ScaleAnimation(start_scale=0.8, end_scale=1.0, duration=0.3)
+                # 添加粒子效果
+                particle_system.emit_explosion(city.x, city.y, COLOR_GOLD, count=15)
                 return
 
         # 如果点击了空白处，不取消选择（保持当前选择）
 
     def _end_turn(self):
         """结束回合"""
+        resource_loader.play_sound("march.wav")
         self.turn += 1
         # 所有城市执行回合结束处理
         for city in self.cities.values():
             city.end_turn()
+        # 添加震动效果
+        self.shake_anim = ShakeAnimation(intensity=5, duration=0.3)
 
     def _move_to_city(self):
         """移动到城市（进入城市管理界面）"""
         if self.selected_city:
             # 检查是否是玩家的城市
             if self.selected_city.owner == self.player_faction:
+                resource_loader.play_sound("click.wav")
                 self.game.current_city = self.selected_city
                 self.next_scene = "city"
                 self.running = False
 
     def _enter_city(self):
         """进入城市"""
+        resource_loader.play_sound("click.wav")
         self._move_to_city()
 
     def update(self, delta_time: float):
         """更新逻辑"""
+        # 更新动画
+        if self.city_scale_anim:
+            self.city_scale_anim.update(delta_time)
+        self.city_float.update(delta_time)
+        if self.shake_anim:
+            self.shake_anim.update(delta_time)
+        self.fade_anim.update(delta_time)
+        self.animation_manager.update(delta_time)
+
+        # 更新粒子系统
+        particle_system.update(delta_time)
+
         # 世界地图场景的更新逻辑
-        pass
 
     def draw(self):
         """绘制场景"""
+        # 应用震动效果
+        shake_offset = (0, 0)
+        if self.shake_anim and not self.shake_anim.is_complete:
+            shake_offset = self.shake_anim.get_offset()
+
         # 绘制背景
         self.screen.fill(COLOR_SAND)
 
         # 绘制地形
         self._draw_terrain()
 
-        # 绘制城市
-        for city in self.cities.values():
-            city.draw(self.screen)
-
         # 绘制连接道路
         self._draw_roads()
 
+        # 绘制城市（带动画）
+        for city in self.cities.values():
+            scale = 1.0
+            offset_y = 0
+
+            # 选中城市的动画效果
+            if self.selected_city == city:
+                if self.city_scale_anim and not self.city_scale_anim.is_complete:
+                    scale = self.city_scale_anim.get_scale()
+                # 浮动效果
+                offset_y = self.city_float.get_offset()
+
+            city.draw(self.screen, scale=scale, offset_y=offset_y)
+
         # 绘制 UI
         self._draw_ui()
+
+        # 绘制粒子效果
+        particle_system.draw(self.screen)
+
+        # 绘制淡入淡出效果
+        if not self.fade_anim.is_complete:
+            alpha = self.fade_anim.get_alpha()
+            if alpha > 0:
+                fade_surface = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
+                fade_surface.fill((0, 0, 0))
+                fade_surface.set_alpha(alpha)
+                self.screen.blit(fade_surface, (0, 0))
 
         pygame.display.flip()
 

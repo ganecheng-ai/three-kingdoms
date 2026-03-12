@@ -70,24 +70,34 @@ class City:
         """获取势力名称"""
         return self.FACTION_NAMES.get(self.owner, "未知")
 
-    def draw(self, screen: pygame.Surface):
-        """绘制城市"""
+    def draw(self, screen: pygame.Surface, scale: float = 1.0, offset_y: int = 0):
+        """绘制城市
+
+        Args:
+            screen: 屏幕表面
+            scale: 缩放比例
+            offset_y: Y 轴偏移量
+        """
         from src.resource_loader import resource_loader
         from src.config import COLOR_WHITE, FONT_SIZE_SMALL
 
-        # 绘制城市区域
-        pygame.draw.circle(screen, self.color, (self.x, self.y), 25)
-        pygame.draw.circle(screen, COLOR_WHITE, (self.x, self.y), 25, 2)
+        # 应用偏移
+        draw_y = self.y + offset_y
+
+        # 绘制城市区域 (带缩放)
+        radius = int(25 * scale)
+        pygame.draw.circle(screen, self.color, (self.x, draw_y), radius)
+        pygame.draw.circle(screen, COLOR_WHITE, (self.x, draw_y), radius, 2)
 
         # 绘制城市名称
         font = resource_loader.get_font(FONT_SIZE_SMALL)
         name_text = font.render(self.name, True, COLOR_WHITE)
-        name_rect = name_text.get_rect(center=(self.x, self.y - 40))
+        name_rect = name_text.get_rect(center=(self.x, draw_y - 40 - int(10 * (scale - 1))))
         screen.blit(name_text, name_rect)
 
         # 绘制兵力
         soldier_text = font.render(f"{self.soldiers}", True, COLOR_WHITE)
-        soldier_rect = soldier_text.get_rect(center=(self.x, self.y + 45))
+        soldier_rect = soldier_text.get_rect(center=(self.x, draw_y + 45 + int(10 * (scale - 1))))
         screen.blit(soldier_text, soldier_rect)
 
     def is_clicked(self, pos: tuple) -> bool:
