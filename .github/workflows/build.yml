@@ -1,0 +1,117 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest
+
+      - name: Run tests
+        run: |
+          python -m pytest tests/ -v
+
+  build:
+    needs: test
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pyinstaller
+
+      - name: Build executable
+        run: |
+          pyinstaller --onefile --windowed --name three-kingdoms src/main.py
+        shell: bash
+
+      - name: Prepare artifacts
+        run: |
+          mkdir -p release
+          if [ "$RUNNER_OS" == "Windows" ]; then
+            cp dist/three-kingdoms.exe release/
+          elif [ "$RUNNER_OS" == "macOS" ]; then
+            cp -r dist/three-kingdoms.app release/
+          else
+            cp dist/three-kingdoms release/
+          fi
+        shell: bash
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: three-kingdoms-${{ runner.os }}
+          path: release/
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts/
+
+      - name: Prepare release files
+        run: |
+          mkdir -p release
+          # Windows
+          if [ -d "artifacts/three-kingdoms-Windows" ]; then
+            cp artifacts/three-kingdoms-Windows/three-kingdoms.exe release/three-kingdoms-windows.exe
+          fi
+          # Linux
+          if [ -d "artifacts/three-kingdoms-Linux" ]; then
+            cp artifacts/three-kingdoms-Linux/three-kingdoms release/three-kingdoms-linux.tar.gz
+          fi
+          # macOS
+          if [ -d "artifacts/three-kingdoms-macOS" ]; then
+            cp -r artifacts/three-kingdoms-macOS/three-kingdoms.app release/three-kingdoms-macos.tar.gz
+          fi
+        shell: bash
+
+      - name: Generate checksums
+        run: |
+          cd release
+          sha256sum * > checksums.txt 2>/dev/null || shasum -a 256 * > checksums.txt
+          cat checksums.txt
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: release/*
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
