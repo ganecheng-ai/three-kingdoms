@@ -84,8 +84,16 @@ three-kingdoms/
 - [x] 配置 PyInstaller 打包
 - [x] 创建 GitHub Actions workflow
 - [x] 修复构建配置问题
-- [ ] 测试各平台构建
-- [ ] 发布第一个版本 v0.1.0
+- [x] 测试各平台构建
+- [x] 发布第一个版本 v0.1.0
+
+## 发布记录
+
+### v0.1.0 (2026-03-12)
+- 首个 alpha 版本发布
+- 支持 Windows (.exe)、Linux (.tar.gz)、macOS (.tar.gz) 三个平台
+- 包含完整的游戏功能：主菜单、世界地图、城市管理、战斗系统
+- 自动生成 SHA256 checksums.txt 文件
 
 ## 发布流程
 - 使用 Git Tag 触发自动构建
