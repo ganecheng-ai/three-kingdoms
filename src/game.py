@@ -20,7 +20,14 @@ class Game:
     def __init__(self):
         # 初始化 Pygame
         pygame.init()
-        pygame.mixer.init()
+
+        # 尝试初始化音频（可选）
+        self.audio_available = False
+        try:
+            pygame.mixer.init()
+            self.audio_available = True
+        except pygame.error:
+            print("警告：音频设备不可用，游戏将以静音模式运行")
 
         # 创建窗口
         self.screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
@@ -49,6 +56,7 @@ class Game:
         self.turn = 1
 
         # 初始化资源
+        resource_loader.set_audio_available(self.audio_available)
         resource_loader.preload_resources()
 
     def switch_scene(self, scene_name: str):

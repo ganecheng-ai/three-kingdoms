@@ -113,9 +113,9 @@ class MenuScene(BaseScene):
         """开始游戏"""
         resource_loader.play_sound("click.wav")
         # 添加淡出动画
-        self.fade_anim = FadeAnimation(fade_in=False, duration=0.3, on_complete=lambda: setattr(self, '_do_start_game', True))
+        self.fade_anim = FadeAnimation(fade_in=False, duration=0.3, on_complete=lambda: setattr(self, '_pending_start_game', True))
 
-    def _do_start_game(self):
+    def _execute_start_game(self):
         """执行开始游戏（动画完成后）"""
         self.next_scene = "world"
 
@@ -135,9 +135,9 @@ class MenuScene(BaseScene):
         """退出游戏"""
         resource_loader.play_sound("click.wav")
         # 添加淡出动画
-        self.fade_anim = FadeAnimation(fade_in=False, duration=0.3, on_complete=lambda: setattr(self, '_do_quit_game', True))
+        self.fade_anim = FadeAnimation(fade_in=False, duration=0.3, on_complete=lambda: setattr(self, '_pending_quit_game', True))
 
-    def _do_quit_game(self):
+    def _execute_quit_game(self):
         """执行退出游戏（动画完成后）"""
         self.running = False
         self.next_scene = None
@@ -170,12 +170,12 @@ class MenuScene(BaseScene):
 
         # 检查淡出动画完成后的操作
         if self.fade_anim.is_complete:
-            if hasattr(self, '_do_start_game') and self._do_start_game:
-                self._do_start_game()
-                delattr(self, '_do_start_game')
-            if hasattr(self, '_do_quit_game') and self._do_quit_game:
-                self._do_quit_game()
-                delattr(self, '_do_quit_game')
+            if hasattr(self, '_pending_start_game') and self._pending_start_game:
+                self._execute_start_game()
+                delattr(self, '_pending_start_game')
+            if hasattr(self, '_pending_quit_game') and self._pending_quit_game:
+                self._execute_quit_game()
+                delattr(self, '_pending_quit_game')
 
     def draw(self):
         """绘制场景"""

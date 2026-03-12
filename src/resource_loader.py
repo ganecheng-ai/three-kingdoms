@@ -41,6 +41,13 @@ class ResourceLoader:
         self.sound_volume = 0.7
         self.music_volume = 0.5
 
+        # 音频是否可用
+        self.audio_available = True
+
+    def set_audio_available(self, available: bool):
+        """设置音频是否可用"""
+        self.audio_available = available
+
     def set_sound_volume(self, volume: float):
         """设置音效音量 (0.0-1.0)"""
         self.sound_volume = max(0.0, min(1.0, volume))
@@ -51,10 +58,13 @@ class ResourceLoader:
     def set_music_volume(self, volume: float):
         """设置背景音乐音量 (0.0-1.0)"""
         self.music_volume = max(0.0, min(1.0, volume))
-        pygame.mixer.music.set_volume(self.music_volume)
+        if self.audio_available:
+            pygame.mixer.music.set_volume(self.music_volume)
 
     def play_sound(self, name: str):
         """播放音效"""
+        if not self.audio_available:
+            return
         sound = self.load_sound(name)
         if sound:
             sound.set_volume(self.sound_volume)
@@ -62,21 +72,26 @@ class ResourceLoader:
 
     def play_music(self, name: str, loops: int = -1):
         """播放背景音乐"""
+        if not self.audio_available:
+            return
         if self.load_music(name):
             self.set_music_volume(self.music_volume)
             pygame.mixer.music.play(loops=loops)
 
     def stop_music(self):
         """停止背景音乐"""
-        pygame.mixer.music.stop()
+        if self.audio_available:
+            pygame.mixer.music.stop()
 
     def pause_music(self):
         """暂停背景音乐"""
-        pygame.mixer.music.pause()
+        if self.audio_available:
+            pygame.mixer.music.pause()
 
     def unpause_music(self):
         """继续播放背景音乐"""
-        pygame.mixer.music.unpause()
+        if self.audio_available:
+            pygame.mixer.music.unpause()
 
     def init_fonts(self):
         """初始化字体"""
@@ -140,6 +155,8 @@ class ResourceLoader:
 
     def load_sound(self, name: str) -> Optional[pygame.mixer.Sound]:
         """加载音效"""
+        if not self.audio_available:
+            return None
         if name in self.sounds:
             return self.sounds[name]
 
@@ -157,6 +174,8 @@ class ResourceLoader:
 
     def load_music(self, name: str) -> bool:
         """加载背景音乐"""
+        if not self.audio_available:
+            return False
         music_path = os.path.join(self.resources_dir, 'sounds', name)
 
         if os.path.exists(music_path):
@@ -174,15 +193,18 @@ class ResourceLoader:
         print("预加载资源...")
         self.init_fonts()
 
-        # 预加载音效
-        sound_types = ["click", "battle", "victory", "defeat", "march", "build"]
-        for sound_type in sound_types:
-            self.load_sound(f"{sound_type}.wav")
-        print("  音效加载完成")
+        # 预加载音效（仅在音频可用时）
+        if self.audio_available:
+            sound_types = ["click", "battle", "victory", "defeat", "march", "build"]
+            for sound_type in sound_types:
+                self.load_sound(f"{sound_type}.wav")
+            print("  音效加载完成")
 
-        # 预加载背景音乐
-        self.load_music("bgm_main.wav")
-        print("  背景音乐加载完成")
+            # 预加载背景音乐
+            self.load_music("bgm_main.wav")
+            print("  背景音乐加载完成")
+        else:
+            print("  音频不可用，跳过音效加载")
 
         print("资源加载完成")
 
