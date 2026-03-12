@@ -64,6 +64,19 @@ jobs:
           else
             cp dist/three-kingdoms release/
           fi
+
+          # Create compressed archives for Linux and macOS
+          if [ "$RUNNER_OS" == "Linux" ]; then
+            cd release
+            tar -czvf ../release/three-kingdoms-linux.tar.gz three-kingdoms
+            cd ..
+            rm release/three-kingdoms
+          elif [ "$RUNNER_OS" == "macOS" ]; then
+            cd release
+            tar -czvf ../release/three-kingdoms-macos.tar.gz three-kingdoms.app
+            cd ..
+            rm -rf release/three-kingdoms.app
+          fi
         shell: bash
 
       - name: Upload artifacts
@@ -90,15 +103,15 @@ jobs:
           mkdir -p release
           # Windows
           if [ -d "artifacts/three-kingdoms-Windows" ]; then
-            cp artifacts/three-kingdoms-Windows/three-kingdoms.exe release/three-kingdoms-windows.exe
+            cp artifacts/three-kingdoms-Windows/three-kingdoms.exe release/
           fi
-          # Linux
-          if [ -d "artifacts/three-kingdoms-Linux" ]; then
-            cp artifacts/three-kingdoms-Linux/three-kingdoms release/three-kingdoms-linux.tar.gz
+          # Linux - already compressed
+          if [ -f "artifacts/three-kingdoms-Linux/three-kingdoms-linux.tar.gz" ]; then
+            cp artifacts/three-kingdoms-Linux/three-kingdoms-linux.tar.gz release/
           fi
-          # macOS
-          if [ -d "artifacts/three-kingdoms-macOS" ]; then
-            cp -r artifacts/three-kingdoms-macOS/three-kingdoms.app release/three-kingdoms-macos.tar.gz
+          # macOS - already compressed
+          if [ -f "artifacts/three-kingdoms-macOS/three-kingdoms-macos.tar.gz" ]; then
+            cp artifacts/three-kingdoms-macOS/three-kingdoms-macos.tar.gz release/
           fi
         shell: bash
 
