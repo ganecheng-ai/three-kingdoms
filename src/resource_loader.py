@@ -37,6 +37,10 @@ class ResourceLoader:
         # 默认字体
         self.default_font: Optional[pygame.font.Font] = None
 
+        # 中文字体相关
+        self.chinese_font_names: list = []
+        self.chinese_font_name: Optional[str] = None
+
         # 音量设置
         self.sound_volume = 0.7
         self.music_volume = 0.5
@@ -105,11 +109,14 @@ class ResourceLoader:
             'DejaVu Sans',  # 备用字体
         ]
 
+        self.chinese_font_names = font_names
+
         loaded = False
         for font_name in font_names:
             try:
                 self.default_font = pygame.font.SysFont(font_name, 24)
                 loaded = True
+                self.chinese_font_name = font_name
                 break
             except:
                 continue
@@ -117,6 +124,7 @@ class ResourceLoader:
         if not loaded:
             # 使用默认字体
             self.default_font = pygame.font.Font(None, 24)
+            self.chinese_font_name = None
 
     def get_font(self, size: int = 24) -> pygame.font.Font:
         """获取字体"""
@@ -125,6 +133,23 @@ class ResourceLoader:
 
         cache_key = f"font_{size}"
         if cache_key not in self.fonts:
+            # 优先尝试使用中文字体
+            if self.chinese_font_name:
+                try:
+                    self.fonts[cache_key] = pygame.font.SysFont(self.chinese_font_name, size)
+                    return self.fonts[cache_key]
+                except:
+                    pass
+
+            # 尝试其他中文字体
+            for font_name in self.chinese_font_names:
+                try:
+                    self.fonts[cache_key] = pygame.font.SysFont(font_name, size)
+                    return self.fonts[cache_key]
+                except:
+                    continue
+
+            # 回退到默认字体
             try:
                 self.fonts[cache_key] = pygame.font.Font(None, size)
             except:
